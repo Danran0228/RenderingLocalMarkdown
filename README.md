@@ -22,7 +22,6 @@
         "MARKDOWN_FOLDER": "markdown", // Markdown 文件存储目录
         "HOST": "0.0.0.0", // 服务器监听地址
         "PORT": 8888, // 服务器端口
-        "THREADS": 4 // 服务器工作线程数
         }
     ```
 
@@ -36,7 +35,6 @@
 | MARKDOWN_FOLDER | Markdown 文件存储目录 | "markdown" | string |
 | HOST | 服务器监听地址 | "0.0.0.0" | string |
 | PORT | 服务器监听端口 | 8888 | integer |
-| THREADS | 服务器工作线程数 | 4 | integer |
 
 ### 配置文件加载优先级
 
