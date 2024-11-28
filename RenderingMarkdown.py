@@ -158,7 +158,7 @@ def create_app(config_file=None):
             return jsonify({
                 'content': f'''
                     <div class="markdown-content">
-                        <h1>{os.path.basename(file_path)}</h1>
+                        
                         {html_content}
                     </div>
                 '''
