@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Markdown文档查看器</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    </head>
+    <body>
+        <div class="layout">
+            <div class="sidebar">
+                <div class="sidebar-header">
+                    <h1>文档目录</h1>
+                </div>
+                <div class="file-tree">
+                    {% for folder, files in structure.items()|sort %}
+                        <div class="folder">
+                            <div class="folder-header" onclick="toggleFolder(this)">
+                                <i class="fas fa-chevron-right folder-icon"></i>
+                                <i class="fas fa-folder"></i>
+                                <span>{{ folder if folder else '根目录' }}</span>
+                            </div>
+                            <ul class="folder-content">
+                                {% for file in files|sort %}
+                                    <li>
+                                        <a href="#" onclick="loadContent('{{ folder + '/' + file[:-3] if folder else file[:-3] }}'); return false;">
+                                            <i class="fas fa-file-alt"></i>
+                                            {{ file[:-3] }}
+                                        </a>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="content-area">
+                <div id="content">
+                    <div class="welcome-message">
+                        <h2>欢迎使用 Markdown 文档查看器</h2>
+                        <p>请从左侧目录选择要查看的文档</p>
+                    </div>
+                </div>
+                <div class="save-article">
+                    <input type="text" id="article-url" placeholder="请输入要保存的文章URL">
+                    <button onclick="saveArticle(event)">
+                        <i class="fas fa-save"></i> 保存文章
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div id="notification" class="notification"></div>
+        <script src="{{ url_for('static', filename='script.js') }}"></script>
+    </body>
+</html>
+

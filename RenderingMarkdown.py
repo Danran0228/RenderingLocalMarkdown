@@ -1,9 +1,10 @@
-from flask import Flask, render_template_string, send_from_directory, jsonify
+from flask import Flask, render_template_string, send_from_directory, jsonify, request, make_response, render_template
 import os
 import markdown
 import re
 from waitress import serve
 import json
+import requests
 
 app = Flask(__name__)
 
@@ -54,84 +55,15 @@ def create_app(config_file=None):
                     folder_structure[folder] = []
                 folder_structure[folder].append(file)
             
-            return render_template_string("""
-                <!DOCTYPE html>
-                <html>
-                    <head>
-                        <title>Markdown文档查看器</title>
-                        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-                        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-                    </head>
-                    <body>
-                        <div class="layout">
-                            <div class="sidebar">
-                                <div class="sidebar-header">
-                                    <h1>文档目录</h1>
-                                </div>
-                                <div class="file-tree">
-                                    {% for folder, files in structure.items()|sort %}
-                                        <div class="folder">
-                                            <div class="folder-header" onclick="toggleFolder(this)">
-                                                <i class="fas fa-chevron-right folder-icon"></i>
-                                                <i class="fas fa-folder"></i>
-                                                <span>{{ folder if folder else '根目录' }}</span>
-                                            </div>
-                                            <ul class="folder-content">
-                                                {% for file in files|sort %}
-                                                    <li>
-                                                        <a href="#" onclick="loadContent('{{ folder + '/' + file[:-3] if folder else file[:-3] }}'); return false;">
-                                                            <i class="fas fa-file-alt"></i>
-                                                            {{ file[:-3] }}
-                                                        </a>
-                                                    </li>
-                                                {% endfor %}
-                                            </ul>
-                                        </div>
-                                    {% endfor %}
-                                </div>
-                            </div>
-                            <div class="content-area">
-                                <div id="content">
-                                    <div class="welcome-message">
-                                        <h2>欢迎使用 Markdown 文档查看器</h2>
-                                        <p>请从左侧目录选择要查看的文档</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <script>
-                            function toggleFolder(element) {
-                                const folderContent = element.nextElementSibling;
-                                const folderIcon = element.querySelector('.folder-icon');
-                                
-                                if (folderContent.style.display === 'none' || !folderContent.style.display) {
-                                    folderContent.style.display = 'block';
-                                    folderIcon.classList.remove('fa-chevron-right');
-                                    folderIcon.classList.add('fa-chevron-down');
-                                } else {
-                                    folderContent.style.display = 'none';
-                                    folderIcon.classList.remove('fa-chevron-down');
-                                    folderIcon.classList.add('fa-chevron-right');
-                                }
-                            }
-                            
-                            function loadContent(filePath) {
-                                fetch(`/api/content/${filePath}`)
-                                    .then(response => response.json())
-                                    .then(data => {
-                                        document.getElementById('content').innerHTML = data.content;
-                                    })
-                                    .catch(error => {
-                                        console.error('Error:', error);
-                                        document.getElementById('content').innerHTML = '<div class="error">加载失败</div>';
-                                    });
-                            }
-                        </script>
-                    </body>
-                </html>
-            """, structure=folder_structure)
+            return render_template('index.html', structure=folder_structure)
         except Exception as e:
             return f"发生错误: {str(e)}"
+
+    @app.after_request
+    def set_response_encoding(response):
+        if response.content_type.startswith('application/json'):
+            response.headers['Content-Type'] = 'application/json; charset=utf-8'
+        return response
 
     # 添加API路由来获取文件内容
     @app.route('/api/content/<path:file_path>')
@@ -158,7 +90,6 @@ def create_app(config_file=None):
             return jsonify({
                 'content': f'''
                     <div class="markdown-content">
-                        
                         {html_content}
                     </div>
                 '''
@@ -196,6 +127,10 @@ def create_app(config_file=None):
                         <div class="container">
                             <h1>{{ filename }}</h1>
                             <div class="content">{{ content|safe }}</div>
+                            <form action="{{ save_url }}" method="POST">
+                                <input type="hidden" name="url" value="{{ request.path }}">
+                                <button type="submit">保存文章</button>
+                            </form>
                             <a href="/" class="back-link">
                                 <i class="fas fa-arrow-left"></i> 返回文件列表
                             </a>
@@ -214,5 +149,38 @@ def create_app(config_file=None):
         if os.path.exists(image_full_path):
             return send_from_directory(os.path.dirname(image_full_path), os.path.basename(image_full_path))
         return "图片未找到", 404
+    
+    @app.route('/save-article', methods=['POST'])
+    def save_article():
+        try:
+            data = request.get_json()
+            article_url = data.get('url')
+
+            # 从配置文件中获取文章保存服务的URL
+            save_service_url = app.config.get('SAVE_ARTICLE_SERVICE_URL')  
+            if not save_service_url:
+                return jsonify({
+                    'message': '文章保存服务URL未配置',
+                    'status': 'error'
+                }), 500
+
+            response = requests.get(save_service_url, params={'url': article_url})
+            
+            if response.status_code == 200:
+                return jsonify({
+                    'message': '文章保存成功',
+                    'status': 'success'
+                })
+            else:
+                return jsonify({
+                    'message': '文章保存失败',
+                    'status': 'error'
+                }), 500
+
+        except Exception as e:
+            return jsonify({
+                'message': f'发生错误: {str(e)}',
+                'status': 'error'
+            }), 500
     
     return app
