@@ -240,3 +240,174 @@ th {
 .save-article button:hover {
     background-color: #45a049;
 }
+
+/* 响应式设计 */
+@media screen and (max-width: 768px) {
+    body {
+        overflow-x: hidden;  /* 防止水平滚动 */
+    }
+
+    .layout {
+        position: relative;
+        width: 100%;
+        height: 100vh;
+        overflow: hidden;
+    }
+
+    .content-area {
+        width: 100%;
+        height: 100vh;
+        padding: 15px;
+        overflow-y: auto;
+        position: relative;
+        z-index: 1;
+        transition: transform 0.3s ease-in-out;
+        background-color: white;
+    }
+
+    .sidebar {
+        position: fixed;
+        left: -85%;  /* 初始位置在屏幕左侧外 */
+        top: 0;
+        width: 85%;
+        height: 100vh;
+        max-height: none;
+        z-index: 1000;
+        transform: translateX(0);
+        transition: transform 0.3s ease-in-out;
+        background-color: #f8f9fa;
+        box-shadow: 2px 0 8px rgba(0,0,0,0.1);
+    }
+
+    .sidebar.active {
+        transform: translateX(100%);  /* 滑入屏幕 */
+    }
+
+    .content-area.shifted {
+        transform: translateX(85%);
+    }
+
+    /* 遮罩层样式 */
+    .overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+        opacity: 0;
+        transition: opacity 0.3s ease-in-out;
+    }
+
+    .overlay.active {
+        display: block;
+        opacity: 1;
+    }
+
+    /* 菜单按钮样式 */
+    .menu-toggle {
+        position: fixed;
+        top: 15px;
+        left: 15px;
+        z-index: 1001;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        transition: background-color 0.3s;
+    }
+
+    .menu-toggle:hover {
+        background-color: #45a049;
+    }
+
+    .menu-toggle:active {
+        transform: scale(0.95);
+    }
+
+    /* 优化侧边栏内部滚动 */
+    .file-tree {
+        height: calc(100vh - 70px);
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 50px; /* 确保最后的内容可以滚动到可见区域 */
+    }
+
+    /* 优化侧边栏标题 */
+    .sidebar-header {
+        position: sticky;
+        top: 0;
+        background-color: #f8f9fa;
+        z-index: 2;
+        padding: 15px 20px;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    /* 调整保存按钮位置，避免与菜单按钮冲突 */
+    .save-article {
+        top: 70px;  /* 给菜单按钮留出空间 */
+    }
+
+    /* 确保内容区域在移动端正确显示 */
+    .markdown-content {
+        padding: 20px 15px;
+        margin-top: 50px; /* 给菜单按钮留出空间 */
+    }
+}
+
+/* 针对更小屏幕的优化 */
+@media screen and (max-width: 480px) {
+    .sidebar {
+        width: 85%;
+        left: -85%;
+    }
+
+    .content-area.shifted {
+        transform: translateX(85%);
+    }
+}
+
+/* 深色模式支持 */
+@media (prefers-color-scheme: dark) {
+    body {
+        background-color: #1a1a1a;
+        color: #e0e0e0;
+    }
+
+    .sidebar {
+        background-color: #2d2d2d;
+        border-color: #404040;
+    }
+
+    .folder-header:hover,
+    .folder-content a:hover {
+        background-color: #404040;
+    }
+
+    .markdown-content {
+        color: #e0e0e0;
+    }
+
+    pre {
+        background-color: #2d2d2d;
+    }
+
+    .save-article {
+        background-color: #2d2d2d;
+    }
+
+    input {
+        background-color: #1a1a1a;
+        color: #e0e0e0;
+        border-color: #404040;
+    }
+}
