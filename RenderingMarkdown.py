@@ -115,29 +115,9 @@ def create_app(config_file=None):
             html_content = markdown.markdown(md_content, extensions=['fenced_code', 'tables'])
             display_name = os.path.basename(file_path)
 
-            return render_template_string("""
-                <!DOCTYPE html>
-                <html>
-                    <head>
-                        <title>{{ filename }}</title>
-                        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-                        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-                    </head>
-                    <body>
-                        <div class="container">
-                            <h1>{{ filename }}</h1>
-                            <div class="content">{{ content|safe }}</div>
-                            <form action="{{ save_url }}" method="POST">
-                                <input type="hidden" name="url" value="{{ request.path }}">
-                                <button type="submit">保存文章</button>
-                            </form>
-                            <a href="/" class="back-link">
-                                <i class="fas fa-arrow-left"></i> 返回文件列表
-                            </a>
-                        </div>
-                    </body>
-                </html>
-            """, filename=display_name, content=html_content)
+            return render_template('view.html', 
+                                 filename=display_name, 
+                                 content=html_content)
 
         except Exception as e:
             return f"发生错误: {str(e)}"
