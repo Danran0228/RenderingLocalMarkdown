@@ -13,25 +13,31 @@
                     <h1>文档目录</h1>
                 </div>
                 <div class="file-tree">
-                    {% for folder, files in structure.items()|sort %}
-                        <div class="folder">
-                            <div class="folder-header" onclick="toggleFolder(this)">
-                                <i class="fas fa-chevron-right folder-icon"></i>
-                                <i class="fas fa-folder"></i>
-                                <span>{{ folder if folder else '根目录' }}</span>
-                            </div>
-                            <ul class="folder-content">
-                                {% for file in files|sort %}
-                                    <li>
-                                        <a href="#" onclick="loadContent('{{ folder + '/' + file[:-3] if folder else file[:-3] }}'); return false;">
-                                            <i class="fas fa-file-alt"></i>
-                                            {{ file[:-3] }}
-                                        </a>
-                                    </li>
-                                {% endfor %}
-                            </ul>
-                        </div>
-                    {% endfor %}
+                    {% macro render_tree(tree) %}
+                        {% for name, item in tree.items()|sort %}
+                            {% if item.type == 'directory' %}
+                                <div class="folder">
+                                    <div class="folder-header" onclick="toggleFolder(this)">
+                                        <i class="fas fa-chevron-right folder-icon"></i>
+                                        <i class="fas fa-folder"></i>
+                                        <span>{{ name }}</span>
+                                    </div>
+                                    <div class="folder-content">
+                                        {{ render_tree(item.children) }}
+                                    </div>
+                                </div>
+                            {% else %}
+                                <div class="file">
+                                    <a href="#" onclick="loadContent('{{ item.path }}'); return false;">
+                                        <i class="fas fa-file-alt"></i>
+                                        {{ name[:-3] }}
+                                    </a>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    {% endmacro %}
+                    
+                    {{ render_tree(structure) }}
                 </div>
             </div>
             <div class="content-area">

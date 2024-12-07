@@ -67,17 +67,17 @@ body {
 }
 
 .folder-content {
+    margin-left: 20px;
     display: none;
-    margin: 0;
-    padding-left: 25px;
-    list-style: none;
+    border-left: 1px solid #dee2e6;
+    padding-left: 10px;
 }
 
-.folder-content li {
+.folder-content .file {
     margin: 8px 0;
 }
 
-.folder-content a {
+.file a {
     display: flex;
     align-items: center;
     text-decoration: none;
@@ -87,11 +87,11 @@ body {
     transition: background-color 0.2s;
 }
 
-.folder-content a:hover {
+.file a:hover {
     background-color: #e9ecef;
 }
 
-.folder-content i {
+.file i {
     margin-right: 8px;
     color: #3498db;
 }

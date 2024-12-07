@@ -30,32 +30,34 @@ def create_app(config_file=None):
     os.makedirs(static_folder, exist_ok=True)
     
     def get_markdown_files(directory):
-        """递归获取所有Markdown文件，并按文件夹正确组织"""
-        markdown_files = []
-        for root, _, files in os.walk(directory):
-            # 获取相对于根目录的路径
-            rel_path = os.path.relpath(root, directory)
-            rel_path = '' if rel_path == '.' else rel_path
-            
-            # 过滤出当前文件夹下的markdown文件
-            md_files = [f for f in files if f.endswith('.md')]
-            if md_files:
-                # 将当前文件夹的所有markdown文件添加到列表中
-                markdown_files.extend([(f, rel_path) for f in md_files])
-        
-        return markdown_files
+        """递归获取所有Markdown文件，并构建层级结构"""
+        def build_tree(path):
+            result = {}
+            for item in os.listdir(path):
+                item_path = os.path.join(path, item)
+                relative_path = os.path.relpath(item_path, directory)
+                
+                if os.path.isdir(item_path):
+                    subtree = build_tree(item_path)
+                    if subtree:  # 只添加非空目录
+                        result[item] = {
+                            'type': 'directory',
+                            'children': subtree
+                        }
+                elif item.endswith('.md'):
+                    result[item] = {
+                        'type': 'file',
+                        'path': relative_path[:-3]  # 移除.md后缀
+                    }
+            return result
+
+        return build_tree(directory)
     
     @app.route('/')
     def index():
         try:
-            all_files = get_markdown_files(app.config['MARKDOWN_FOLDER'])
-            folder_structure = {}
-            for file, folder in all_files:
-                if folder not in folder_structure:
-                    folder_structure[folder] = []
-                folder_structure[folder].append(file)
-            
-            return render_template('index.html', structure=folder_structure)
+            file_structure = get_markdown_files(app.config['MARKDOWN_FOLDER'])
+            return render_template('index.html', structure=file_structure)
         except Exception as e:
             return f"发生错误: {str(e)}"
 
