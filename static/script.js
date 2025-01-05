@@ -14,9 +14,18 @@ function toggleFolder(element) {
 }
 
 function loadContent(filePath) {
-    fetch(`/api/content/${filePath}`)
+    // 将路径按 / 分割，分别编码每个部分，然后重新组合
+    const encodedPath = filePath.split('/')
+        .map(part => encodeURIComponent(part))
+        .join('/');
+
+    fetch(`/api/content/${encodedPath}`)
         .then(response => response.json())
         .then(data => {
+            if (data.error) {
+                document.getElementById('content').innerHTML = `<div class="error">${data.error}</div>`;
+                return;
+            }
             document.getElementById('content').innerHTML = data.content;
         })
         .catch(error => {

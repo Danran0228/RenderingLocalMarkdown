@@ -28,7 +28,7 @@
                                 </div>
                             {% else %}
                                 <div class="file">
-                                    <a href="#" onclick="loadContent('{{ item.path }}'); return false;">
+                                    <a href="#" onclick="loadContent('{{ item.path|replace('\\', '/') }}'); return false;">
                                         <i class="fas fa-file-alt"></i>
                                         {{ name[:-3] }}
                                     </a>
